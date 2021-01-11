@@ -2,15 +2,18 @@ import datajoint as dj
 import re
 import inspect
 from termcolor import colored
+import itertools
 
 
 class DJSearch:
 
-    def __init__(self, db_prefix='', context=None):
+    def __init__(self, db_prefixes=[''], context=None):
+        db_prefixes = [db_prefixes] if isinstance(db_prefixes, str) else db_prefixes
         self.context = context or inspect.currentframe().f_back.f_locals
         self.virtual_modules = {}
 
-        self.schema_names = [s for s in dj.list_schemas() if s.startswith(db_prefix)]
+        self.schema_names = set(itertools.chain(*[[s for s in dj.list_schemas() if s.startswith(db_prefix)]
+                                                  for db_prefix in db_prefixes]))
 
         tables_definitions = []
         for schema_name in self.schema_names:  # add progress bar

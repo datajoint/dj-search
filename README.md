@@ -12,8 +12,8 @@ Install using pip from GitHub repository:
 ```
 from dj_search import DJSearch
 
-# limit the search scope to schemas with a particular prefix
-djsearch = DJSearch('dbprefix_')
+# limit the search scope to schemas with database prefixes of interest
+djsearch = DJSearch(['dbprefix1_', 'dbprefix2_])
 
 # several ways to do search:
 
