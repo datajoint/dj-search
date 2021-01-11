@@ -13,10 +13,10 @@ class DJSearch:
         self.schema_names = [s for s in dj.list_schemas() if s.startswith(db_prefix)]
 
         tbls_defi = []
-        for schema_name in self.schema_names:
+        for schema_name in self.schema_names:  # add progress bar
             self.virtual_modules[schema_name] = dj.create_virtual_module(schema_name, schema_name)
             schema_defi = self.virtual_modules[schema_name].schema.save()
-            schema_defi = schema_defi.replace('@schema', '@{}'.format(schema_name))
+            schema_defi = re.sub('@schema(\s.)', '@{}\g<1>'.format(schema_name), schema_defi)
 
             for match in re.finditer("VirtualModule\('(\w+)', '(\w+)'\)", schema_defi):
                 vmod, vmod_rep = match.groups()
