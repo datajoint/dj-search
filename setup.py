@@ -1,6 +1,5 @@
 import setuptools
 import pathlib
-from dj_search.meta import pkg_name, __version__
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
