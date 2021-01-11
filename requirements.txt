@@ -1,0 +1,2 @@
+datajoint==0.13.dev2
+termcolor
