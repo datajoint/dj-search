@@ -12,20 +12,20 @@ class DJSearch:
 
         self.schema_names = [s for s in dj.list_schemas() if s.startswith(db_prefix)]
 
-        tbls_defi = []
+        tables_definitions = []
         for schema_name in self.schema_names:  # add progress bar
             self.virtual_modules[schema_name] = dj.create_virtual_module(schema_name, schema_name)
-            schema_defi = self.virtual_modules[schema_name].schema.save()
-            schema_defi = re.sub('@schema(\s.)', '@{}\g<1>'.format(schema_name), schema_defi)
+            schema_definition = self.virtual_modules[schema_name].schema.save()
+            schema_definition = re.sub('@schema(\s.)', '@{}\g<1>'.format(schema_name), schema_definition)
 
-            for match in re.finditer("VirtualModule\('(\w+)', '(\w+)'\)", schema_defi):
+            for match in re.finditer("VirtualModule\('(\w+)', '(\w+)'\)", schema_definition):
                 vmod, vmod_rep = match.groups()
-                schema_defi = schema_defi.replace(vmod, vmod_rep)
+                schema_definition = schema_definition.replace(vmod, vmod_rep)
 
-            tbls_defi.append(schema_defi)
+            tables_definitions.append(schema_definition)
 
         # join definitions from all schema, remove INDEX and UNIQUE lines
-        defi = '\n'.join(tbls_defi)
+        defi = '\n'.join(tables_definitions)
         defi = re.sub('\s+?INDEX.+?\n|\s+?UNIQUE.+?\n', '', defi, flags=re.MULTILINE)
         defi = re.sub('([\(\)\[\]\w])( *)"""', '\g<1>\n\g<2>"""', defi)
 
@@ -75,18 +75,18 @@ class DJMatch:
 
             if is_class:
                 is_attr, is_comment = False, False
-            elif ':' not in line and '#' not in line:
-                is_attr, is_comment = False, False
             elif ':' in line and '#' not in line:
                 is_attr, is_comment = True, False
             elif ':' not in line and '#' in line:
                 is_attr, is_comment = False, True
-            else:  # both ':' and '#' present
+            elif ':' in line and '#' in line:
                 mstr_start = match.span(2)[0] - line_start.span()[0]
                 if mstr_start > line.index('#'):
                     is_attr, is_comment = False, True
                 elif mstr_start < line.index(':'):
                     is_attr, is_comment = True, False
+            else:  # neither ':' nor '#' are present
+                is_attr, is_comment = False, False
 
             if level == 'attribute' and (is_class or not is_attr):
                 continue
