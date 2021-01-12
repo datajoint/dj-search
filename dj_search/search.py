@@ -97,7 +97,7 @@ class DJMatch:
                 continue
 
             # extract the table this matched string belongs to
-            for class_start in re.finditer(' *class', self._definition_string[:match.span()[-1]]):
+            for class_start in re.finditer(' *class ', self._definition_string[:match.span()[-1]]):
                 pass
             class_end = next(re.finditer('definition = """.*?"""' if is_class else '"""', self._definition_string[match.span()[-1]:], re.DOTALL))
 
