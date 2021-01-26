@@ -57,20 +57,20 @@ class DJMatch:
         self._do_search(level)
 
     def _do_search(self, level=None):
-        for match in re.finditer(' *(class\s\w*?)?({})'.format(self.search_str), self._definition_string, re.I):
+        for match in re.finditer(r' *(class\s\w*?)?({})'.format(self.search_str), self._definition_string, re.I):
             is_class = bool(match.groups()[0])
 
             if level == 'table':
                 if not is_class:
                     continue
                 else:
-                    if re.match('(\w+)\(', self._definition_string[match.span(2)[-1]:]):
+                    if re.match(r'(\w+)\(', self._definition_string[match.span(2)[-1]:]):
                         continue
 
             # extract the line this matched string belongs to
-            for line_start in re.finditer('\n', self._definition_string[:match.span()[-1]]):
+            for line_start in re.finditer(r'\n', self._definition_string[:match.span()[-1]]):
                 pass
-            line_end = re.search('\n', self._definition_string[match.span()[-1]:])
+            line_end = re.search(r'\n', self._definition_string[match.span()[-1]:])
             line = self._definition_string[line_start.span()[0]:line_end.span()[-1] + match.span()[-1]]
 
             if ('dj.VirtualModule' in line
@@ -102,13 +102,13 @@ class DJMatch:
             if is_class:
                 class_start = match
             else:
-                for class_start in re.finditer(' *class\s(\w+)\((.+)\):', self._definition_string[:match.span()[-1]]):
+                for class_start in re.finditer(r' *class\s(\w+)\((.+)\):', self._definition_string[:match.span()[-1]]):
                     pass
             class_end = next(re.finditer('definition = """.*?"""' if is_class else '"""',
                                          self._definition_string[match.span()[-1]:], re.DOTALL))
 
             tbl_defi = self._definition_string[class_start.span()[0]:class_end.span()[-1] + match.span()[-1]]
-            tbl_name, tbl_tier = re.search('class\s(\w+)\((.+)\):', tbl_defi).groups()
+            tbl_name, tbl_tier = re.search(r'class\s(\w+)\((.+)\):', tbl_defi).groups()
 
             # extract schema and master table
             for schema_match in re.finditer(r'@(\w+)\nclass\s(\w+)\((.+)\):',
@@ -132,7 +132,7 @@ class DJMatch:
 
             matched_str = match.groups()[1]
 
-            color_shift = len(re.findall('\\x1b\[31m{}\\x1b\[0m'.format(self.search_str), tbl_defi, re.I)) * len(colored('', 'red'))
+            color_shift = len(re.findall(r'\\x1b\[31m{}\\x1b\[0m'.format(self.search_str), tbl_defi, re.I)) * len(colored('', 'red'))
             tbl_defi = ''.join([tbl_defi[:match.span(2)[0] - class_start.span()[0] + color_shift + len(master_prepend)],
                                 colored(matched_str, 'red'),
                                 tbl_defi[match.span(2)[-1] - class_start.span()[0] + color_shift + len(master_prepend):]])
