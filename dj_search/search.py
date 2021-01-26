@@ -97,11 +97,14 @@ class DJMatch:
                 continue
 
             # extract the table this matched string belongs to
-            for class_start in re.finditer(' *class ', self._definition_string[:match.span()[-1]]):
+            for class_start in re.finditer('\n *class ', self._definition_string[:match.span()[-1]]):
                 pass
             class_end = next(re.finditer('definition = """.*?"""' if is_class else '"""', self._definition_string[match.span()[-1]:], re.DOTALL))
 
-            tbl_defi = self._definition_string[class_start.span()[0]:class_end.span()[-1] + match.span()[-1]]
+            class_start_idx = class_start.span()[0] + 1
+            class_end_idx = class_end.span()[-1]
+
+            tbl_defi = self._definition_string[class_start_idx:class_end_idx + match.span()[-1]]
             tbl_name, tbl_tier = re.search('class\s(\w+)\((.+)\)', tbl_defi).groups()
 
             # extract schema and master table
@@ -127,9 +130,9 @@ class DJMatch:
             matched_str = match.groups()[1]
 
             color_shift = len(re.findall('\\x1b\[31m{}\\x1b\[0m'.format(self.search_str), tbl_defi, re.I)) * len(colored('', 'red'))
-            tbl_defi = ''.join([tbl_defi[:match.span(2)[0] - class_start.span()[0] + color_shift + len(master_prepend)],
+            tbl_defi = ''.join([tbl_defi[:match.span(2)[0] - class_start_idx + color_shift + len(master_prepend)],
                                 colored(matched_str, 'red'),
-                                tbl_defi[match.span(2)[-1] - class_start.span()[0] + color_shift + len(master_prepend):]])
+                                tbl_defi[match.span(2)[-1] - class_start_idx + color_shift + len(master_prepend):]])
 
             if key in self.matches:
                 self.matches[key]['definition'] = tbl_defi
