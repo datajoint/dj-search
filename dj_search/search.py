@@ -132,7 +132,7 @@ class DJMatch:
 
             matched_str = match.groups()[1]
 
-            color_shift = len(re.findall(r'\\x1b\[31m{}\\x1b\[0m'.format(self.search_str), tbl_defi, re.I)) * len(colored('', 'red'))
+            color_shift = len(re.findall('\\x1b\[31m{}\\x1b\[0m'.format(self.search_str), tbl_defi, re.I)) * len(colored('', 'red'))
             tbl_defi = ''.join([tbl_defi[:match.span(2)[0] - class_start.span()[0] + color_shift + len(master_prepend)],
                                 colored(matched_str, 'red'),
                                 tbl_defi[match.span(2)[-1] - class_start.span()[0] + color_shift + len(master_prepend):]])
