@@ -36,4 +36,16 @@ djmatch = djsearch.search('field', level='attribute')
     + ***definition***: string of the table definition
     + ***table***: DJ table for this table
     + ***tier***: tier of this table
-    
+
+# Local Testing
+
+- Create a `.env` file within a local copy of this repo with appropriate values based on your system. For instance:
+  ```shell
+  HOST_UID=1000
+  PY_VER=3.8
+  ```
+- Run the test workflow by:
+  ```shell
+  docker-compose -f LNX-docker-compose.yaml up --build --exit-code-from app
+  ```
+- Note: Make sure to `docker-compose -f LNX-docker-compose.yaml down` between runs.
