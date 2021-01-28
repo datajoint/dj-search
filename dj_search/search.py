@@ -174,16 +174,13 @@ class DJMatch:
                                  for i, b in enumerate(self._definition_string.split('\n\n\n'))
                                  if (i > 1 and 'dj.Schema' not in b and
                                      next(re.finditer(level_regex, b, re.I), False))]:
-            schema_name, _, _, table_name, table_tier = re.compile(
-                r'@(?P<schema_name>\w+)(\s+)?\n'
+            schema_name, _, table_name, table_tier = re.compile(
+                fr'@(?P<schema_name>{w}){s}[{n}]'
                 r'(\s+)?class\s+(?P<table_name>\w+)\((?P<table_tier>\w+\.?\w+)\)').match(
                     match_definition).groups()
             self.matches[f'{schema_name}.{table_name}'] = {
-                'definition': match_definition,
-                'pretty_definition': match_definition,
-                'schema_name': schema_name,
-                'table': table_name,
-                'tier': table_tier,
+                'definition': match_definition, 'pretty_definition': match_definition,
+                'schema_name': schema_name, 'table': table_name, 'tier': table_tier,
                 'matches': [],
             }
             color_shift = 9  # shift for red color
