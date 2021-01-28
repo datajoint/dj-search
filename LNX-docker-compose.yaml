@@ -16,7 +16,7 @@ services:
         pytest -s --cov-report term-missing \
           --cov=/opt/conda/lib/python3.8/site-packages/dj_search /main/tests
         echo "------ STYLE TESTS ------"
-        flake8 dj_search --count --max-complexity=20 --max-line-length=95 --statistics
+        flake8 dj_search --count --max-complexity=21 --max-line-length=95 --statistics
     volumes:
       - .:/main
       - ./test_requirements.txt:/tmp/pip_requirements.txt

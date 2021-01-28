@@ -29,7 +29,7 @@ class DJSearch:
             tables_definitions.append('\n\n\n' + schema_definition)
 
         # join definitions from all schema, remove INDEX and UNIQUE lines
-        defi = '\n'.join(tables_definitions)
+        defi = r'\n'.join(tables_definitions)
         defi = re.sub(r'\s+?INDEX.+?\n|\s+?UNIQUE.+?\n', '', defi, flags=re.MULTILINE)
         defi = re.sub(r'([\(\)\[\]\w])( *)"""', r'\g<1>\n\g<2>"""', defi)
 
@@ -41,6 +41,8 @@ class DJSearch:
         :param level: 'table', 'attribute', 'comment'
         :return:
         """
+        if level is not None and level not in ('table', 'attribute', 'comment'):
+            raise ValueError('Argument "level" must be ("table", "attribute", "comment")')
         m = DJMatch(search_str, self.definition_string, self.virtual_modules, level=level,
                     method=method)
         m.print()
@@ -58,7 +60,7 @@ class DJMatch:
         getattr(self, method)(level)
 
     def _do_search(self, level=None):
-        for match in re.finditer(r'(class\s\w*?)?({})'.format(self.search_str),
+        for match in re.finditer(r' *(class\s\w*?)?({})'.format(self.search_str),
                                  self._definition_string, re.I):
             is_class = bool(match.groups()[0])
 
@@ -66,13 +68,15 @@ class DJMatch:
                 if not is_class:
                     continue
                 else:
+                    # safeguard against partial class_name match - e.g. "Unit" in "UnitSpikes"
                     if re.match(r'(\w+)\(', self._definition_string[match.span(2)[-1]:]):
                         continue
 
-            # extract the line this matched string belongs to
-            for line_start in re.finditer('\n', self._definition_string[:match.span()[-1]]):
+            # extract the whole line this matched string is on
+            # from the last "\n" right before the match to the first "\n" right after
+            for line_start in re.finditer(r'\n', self._definition_string[:match.span()[-1]]):
                 pass
-            line_end = re.search('\n', self._definition_string[match.span()[-1]:])
+            line_end = re.search(r'\n', self._definition_string[match.span()[-1]:])
             line = self._definition_string[line_start.span()[0]:line_end.span()[-1] +
                                            match.span()[-1]]
 
@@ -102,19 +106,25 @@ class DJMatch:
                 continue
 
             # extract the table this matched string belongs to
-            for class_start in re.finditer(' *class',
-                                           self._definition_string[:match.span()[-1]]):
-                pass
+            # from the
+            if is_class:
+                class_start = match
+            else:
+                for class_start in re.finditer(r' *class\s(\w+)\((.+)\):',
+                                               self._definition_string[:match.span()[-1]]):
+                    pass
+            # non-greedy search for the end of the class definition
             class_end = next(re.finditer('definition = """.*?"""' if is_class else '"""',
                                          self._definition_string[match.span()[-1]:],
                                          re.DOTALL))
 
             tbl_defi = self._definition_string[class_start.span()[0]:class_end.span()[-1] +
                                                match.span()[-1]]
-            tbl_name, tbl_tier = re.search(r'class\s(\w+)\((.+)\)', tbl_defi).groups()
+            tbl_name, tbl_tier = re.search(r'class\s(\w+)\((.+)\):', tbl_defi).groups()
 
-            # extract schema and master table
-            for schema_match in re.finditer(r'@(\w+)\nclass\s(\w+)\((.+)\)',
+            # extract schema and master table - search from the beginning to the end of the
+            # class-definition string containing the match
+            for schema_match in re.finditer(r'@(\w+)\nclass\s(\w+)\((.+)\):',
                                             self._definition_string[:class_end.span()[-1] +
                                                                     match.span()[-1]]):
                 pass
@@ -139,7 +149,7 @@ class DJMatch:
 
             matched_str = match.groups()[1]
 
-            color_shift = len(re.findall(r'\\x1b\[31m{}\\x1b\[0m'.format(self.search_str),
+            color_shift = len(re.findall(r'\x1b\[31m{}\x1b\[0m'.format(self.search_str),
                                          tbl_defi, re.I)) * len(colored('', 'red'))
             tbl_defi = ''.join([tbl_defi[:match.span(2)[0] - class_start.span()[0] +
                                          color_shift + len(master_prepend)],
