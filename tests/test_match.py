@@ -28,7 +28,6 @@ def test_match(sample_data):
         assert set(m.matches) == set(expected)
         # verify correct match per table
         assert all([len(v['matches']) == expected[t] for t, v in m.matches.items()])
-
     # ------ IBL, Allele
     mask = 'allele'
     sample_key = 'ibl_ingest'

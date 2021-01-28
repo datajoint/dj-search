@@ -17,16 +17,10 @@ jobs:
         py_ver: ["3.8"]
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python ${{matrix.py_ver}}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{matrix.py_ver}}
       - name: Run primary tests
         env:
           HOST_UID: "1001"
           HOST_GID: "116"
           PY_VER: ${{matrix.py_ver}}
           COMPOSE_HTTP_TIMEOUT: "120"
-          COVERALLS_SERVICE_NAME: travis-ci
-          COVERALLS_REPO_TOKEN: fd0BoXG46TPReEem0uMy7BJO5j0w1MQiY
         run: docker-compose -f LNX-docker-compose.yaml up --build --exit-code-from app

@@ -12,7 +12,7 @@ class DJSearch:
         self.virtual_modules = {}
 
         self.schema_names = set(s for s in iter(dj.list_schemas())
-                                if any((p in s for p in db_prefixes)))
+                                if any(p in s for p in db_prefixes))
 
         tables_definitions = []
         for schema_name in self.schema_names:  # add progress bar
@@ -153,11 +153,13 @@ class DJMatch:
                 self.matches[key] = {'definition': tbl_defi, 'table': table, 'tier': tbl_tier}
 
     def _do_search2(self, level=None):
+        # regex constants
         s = r'[\t ]*'        # horizontal whitespace
         w = r'\w*'           # words valid for variable names
         e = r'[\w()."\'=]*'  # valid python expression
         n = '\n\r\v\f'       # vertical whitespace
         a = fr'[^{n}]*'      # all characters except vertical whitespace
+        # determine appropriate regex based on level
         if level is None:  # anywhere
             level_regex = self.search_str
         elif level == 'table':
@@ -167,6 +169,7 @@ class DJMatch:
                            f'{w}{self.search_str}{w}{s}(={s}{e}{s})?:){a}(?=[#{n}])')
         elif level == 'comment':
             level_regex = f'#{a}{self.search_str}{a}(?=[{n}])'
+        # split full definition into class blocks + iterate over those that match regex once
         for match_definition in [b[2:] if i == 2 else b
                                  for i, b in enumerate(self._definition_string.split('\n\n\n'))
                                  if (i > 1 and 'dj.Schema' not in b and
@@ -183,7 +186,8 @@ class DJMatch:
                 'tier': table_tier,
                 'matches': [],
             }
-            color_shift = 9
+            color_shift = 9  # shift for red color
+            # iterate over matches within class block to store match and adjust color
             for i, match in enumerate([m for m in re.finditer(level_regex,
                                                               match_definition,
                                                               re.I)]):
