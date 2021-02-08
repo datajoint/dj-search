@@ -72,6 +72,9 @@ target/
 # Jupyter Notebook
 .ipynb_checkpoints
 
+# VSCode
+.vscode
+
 # pyenv
 .python-version
 
@@ -114,3 +117,4 @@ docker-compose.yml
 # data
 data/
 notebooks/scratch.ipynb
+notebook
